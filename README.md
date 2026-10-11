@@ -8,51 +8,64 @@ The official TypeScript SDK for **Veyra** — a lightweight, self-hosted develop
 
 ```bash
 npm install @veyradev/sdk
-🚀 Quick Start (For Apps & Bots)
-If you have already generated an API Key from your Veyra dashboard, integrating telemetry into your app takes 3 lines of code.
+```
 
-TypeScript
+## 🚀 Quick Start (For Apps & Bots)
+
+Integrating telemetry into your application takes just a few lines of code. Use the API Key generated from your Veyra dashboard to authenticate your bot or backend service.
+
+```typescript
 import { Veyra } from "@veyradev/sdk";
 
-// Initialize with your Project API Key
+// Initialize with your Project's API Key
 const veyra = new Veyra({
   token: "veyra_your_api_key_here",
-  baseUrl: "[https://api.your-veyra-domain.com](https://api.your-veyra-domain.com)" // Optional: Omit for localhost:3001
+  baseUrl: "[https://api.strixhost.xyz](https://api.strixhost.xyz)" 
 });
 
-// Log an event
+// Log a structured event
 await veyra.events.create({
   level: "error",
   message: "Database connection failed",
-  source: "DatabaseManager"
+  source: "DatabaseManager",
+  environment: "production",
+  metadata: { retries: 3 }
 });
 
 // Send an uptime heartbeat ping
 await veyra.heartbeats.send("your_project_id_here");
-🛠️ Management SDK (For Dashboards & Automation)
-The Veyra SDK also supports full SaaS account management. You can use it to register accounts, provision projects, and generate API keys programmatically.
+```
 
-1. Authenticate & Create a Project
-TypeScript
+---
+
+## 🛠️ Management SDK (For Dashboards & Automation)
+
+The Veyra SDK also supports full SaaS account management. You can use it to register user accounts, provision projects, and generate API keys programmatically using JWT authentication.
+
+### 1. Authenticate & Create a Project
+```typescript
 import { Veyra } from "@veyradev/sdk";
 
 const veyra = new Veyra();
 
-// 1. Login to your developer account
+// 1. Register or Login to your developer account
 const auth = await veyra.auth.login("dev@example.com", "supersecure123");
 
-// 2. Set the JWT token for future requests
+// 2. Set the JWT token for future management requests
 veyra.setToken(auth.token);
 
 // 3. Create a new monitoring project
 const projectData = await veyra.projects.create({
   name: "My Discord Bot",
-  environment: "production"
+  environment: "production",
+  heartbeatInterval: 60000 // Expect a ping every 60 seconds
 });
 
 const projectId = projectData.project.id;
-2. Provision API Keys & Webhooks
-TypeScript
+```
+
+### 2. Provision API Keys & Webhooks
+```typescript
 // Attach a Discord Webhook for automated downtime alerts
 await veyra.projects.update(projectId, {
   webhookUrl: "[https://discord.com/api/webhooks/](https://discord.com/api/webhooks/)...",
@@ -61,57 +74,59 @@ await veyra.projects.update(projectId, {
 
 // Generate a secure API key for this project
 const keyData = await veyra.projects.keys.create(projectId, "Production Key");
-console.log("Your raw API Token:", keyData.key.token); // Store this safely!
-📈 Pro Features (Uptime & Log Export)
-Veyra automatically tracks incidents and calculates SLA Uptime.
 
-TypeScript
+console.log("Your raw API Token:", keyData.key.token); 
+// Note: Store this safely! The raw token is only returned once.
+```
+
+---
+
+## 📈 Pro Features (Uptime & Log Export)
+
+Veyra automatically tracks incidents and calculates SLA Uptime. You can fetch these metrics or export raw data at any time.
+
+```typescript
 // Fetch 30-Day SLA Uptime stats
 const uptime = await veyra.projects.uptime(projectId);
 console.log(`Current SLA: ${uptime.uptimeSLA}`);
 console.log(`Total Downtime: ${uptime.downtimeSeconds} seconds`);
+console.log(`Total Incidents: ${uptime.totalIncidents}`);
 
 // Export all logs as a CSV file
 const csvData = await veyra.projects.exportCsv(projectId);
 fs.writeFileSync("./veyra_logs.csv", csvData);
-📚 API Reference
-Account & Auth
-veyra.auth.register(email, password)
+```
 
-veyra.auth.login(email, password)
+---
 
-Project Management (Requires JWT)
-veyra.projects.list()
+## 📚 Complete API Reference
 
-veyra.projects.create(data)
+### Account & Auth
+- `veyra.auth.register(email, password)`
+- `veyra.auth.login(email, password)`
+- `veyra.setToken(token)` - Update the active JWT or API Key.
 
-veyra.projects.update(projectId, data)
+### Project Management *(Requires JWT)*
+- `veyra.projects.list()` - List all projects owned by the user.
+- `veyra.projects.create(data)` - Create a new project.
+- `veyra.projects.get(projectId)` - Fetch project details.
+- `veyra.projects.update(projectId, data)` - Update settings (webhooks, intervals).
+- `veyra.projects.delete(projectId)` - Permanently delete a project.
+- `veyra.projects.uptime(projectId)` - Get 30-day uptime SLA calculations.
+- `veyra.projects.exportCsv(projectId)` - Download all project events as a CSV string.
 
-veyra.projects.delete(projectId)
+### API Keys *(Requires JWT)*
+- `veyra.projects.keys.list(projectId)` - List all keys (returns secure hashes/prefixes).
+- `veyra.projects.keys.create(projectId, name)` - Generate a new key.
+- `veyra.projects.keys.revoke(projectId, keyId)` - Delete a key.
 
-veyra.projects.uptime(projectId)
+### Telemetry *(Requires API Key)*
+- `veyra.events.create(payload)` - Ingest a new log event.
+- `veyra.events.list(queryFilters)` - Query recent events.
+- `veyra.events.metrics()` - Get event counts grouped by severity level.
+- `veyra.heartbeats.send(projectId)` - Ping the heartbeat monitor.
+- `veyra.incidents.create(payload)` - Manually open an incident.
+- `veyra.incidents.resolve(incidentId)` - Mark an incident as resolved.
 
-veyra.projects.exportCsv(projectId)
-
-API Keys
-veyra.projects.keys.list(projectId)
-
-veyra.projects.keys.create(projectId, name)
-
-veyra.projects.keys.revoke(projectId, keyId)
-
-Telemetry (Requires API Key)
-veyra.events.create(payload)
-
-veyra.events.list(queryFilters)
-
-veyra.events.metrics()
-
-veyra.heartbeats.send(projectId)
-
-veyra.incidents.create(payload)
-
-veyra.incidents.resolve(incidentId)
-
-License
+## License
 MIT

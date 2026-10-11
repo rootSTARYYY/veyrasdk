@@ -132,9 +132,9 @@ fs.writeFileSync("./veyra_logs.csv", csvData);
 
 We provide fully working, production-ready examples for different environments. Click below to see the code:
 
-[![TypeScript Examples](https://img.shields.io/badge/TypeScript-Examples-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](./examples/ts)
-[![JavaScript Examples](https://img.shields.io/badge/JavaScript-Examples-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](./examples/js)
-[![Pure API Examples](https://img.shields.io/badge/Pure_API-(No_SDK)-20BEFF?style=for-the-badge&logo=cURL&logoColor=white)](./examples/api-only)
+[![TypeScript Examples](https://img.shields.io/badge/TypeScript-Examples-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://github.com/rootSTARYYY/veyrasdk/tree/examplesTS)
+[![JavaScript Examples](https://img.shields.io/badge/JavaScript-Examples-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://github.com/rootSTARYYY/veyrasdk/tree/examplesJS)
+[![Pure API Examples](https://img.shields.io/badge/Pure_API-(No_SDK)-20BEFF?style=for-the-badge&logo=cURL&logoColor=white)](https://github.com/rootSTARYYY/veyrasdk/tree/pureapi)
 
 ## License
 MIT

@@ -1,16 +1,72 @@
 # Pure REST API Integration (No SDK)
 
-You don't have to use the official Node.js SDK to use Veyra! Because Veyra is a standard REST API, you can integrate it into **any** language (Python, Go, Rust, Java, etc.) using simple HTTP requests.
+You don't have to use the official Node.js SDK to use Veyra! Because Veyra is a standard REST API, you can integrate it into **any** language (Python, Go, Rust, Java, etc.) or automate it using simple HTTP requests.
 
-Here are examples of how to interact with the Veyra Telemetry API using pure HTTP clients.
-
-## 🔐 Authentication
-All telemetry endpoints require your Project's API Key to be passed in the headers:
-`Authorization: Bearer veyra_your_api_key_here`
+Veyra uses two types of authentication:
+1. **JWT Tokens** for Account Management (Users, Projects, Keys)
+2. **API Keys** for Telemetry (Logs, Heartbeats, Incidents)
 
 ---
 
-## 1. Log an Event (cURL / Bash)
+## 👤 Part 1: Account Management (JWT)
+
+Before you can send logs, you need an account, a project, and an API key. Here is how to automate the setup process using pure `cURL`.
+
+### 1. Register an Account
+Create a new developer account.
+```bash
+curl -X POST [https://api.strixhost.xyz/v1/auth/register](https://api.strixhost.xyz/v1/auth/register) \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "dev@example.com",
+    "password": "supersecure123"
+  }'
+```
+
+### 2. Login (Get JWT Token)
+Log in to receive your Bearer Token. You will use this token for all management routes.
+```bash
+curl -X POST [https://api.strixhost.xyz/v1/auth/login](https://api.strixhost.xyz/v1/auth/login) \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "dev@example.com",
+    "password": "supersecure123"
+  }'
+# Keep the "token" from the response!
+```
+
+### 3. Create a Project
+Using your JWT token, create a new monitoring project.
+```bash
+curl -X POST [https://api.strixhost.xyz/v1/projects](https://api.strixhost.xyz/v1/projects) \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "name": "My Go Backend",
+    "environment": "production",
+    "heartbeatInterval": 60000
+  }'
+# Keep the "id" from the response (This is your Project ID)
+```
+
+### 4. Generate an API Key
+Generate an API Key for your new project. **Save this key! It is only shown once.**
+```bash
+curl -X POST [https://api.strixhost.xyz/v1/projects/YOUR_PROJECT_ID/keys](https://api.strixhost.xyz/v1/projects/YOUR_PROJECT_ID/keys) \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "name": "Production API Key"
+  }'
+```
+
+---
+
+## 📡 Part 2: Telemetry Integration (API Key)
+
+Once you have your API Key from Part 1 (or the dashboard), you can integrate telemetry into your application. **All telemetry routes use the API Key, NOT the JWT.**
+
+### 1. Log an Event (cURL / Bash)
 To log a structured event from a shell script or terminal, make a `POST` request to `/v1/events`.
 
 ```bash
@@ -25,9 +81,7 @@ curl -X POST [https://api.strixhost.xyz/v1/events](https://api.strixhost.xyz/v1/
   }'
 ```
 
----
-
-## 2. Trigger an Incident (Python)
+### 2. Trigger an Incident (Python)
 If your Python backend detects a critical failure, you can trigger a Veyra incident directly. This will automatically fire your Discord Webhook alerts.
 
 ```python
@@ -51,9 +105,7 @@ else:
     print("Failed to create incident:", response.text)
 ```
 
----
-
-## 3. Send a Heartbeat Ping (Vanilla JavaScript / Fetch API)
+### 3. Send a Heartbeat Ping (Vanilla JavaScript / Fetch API)
 If you want to track uptime without installing the SDK package, just send a `POST` request to the heartbeats endpoint on an interval.
 
 ```javascript
@@ -80,9 +132,7 @@ setInterval(async () => {
 }, 60 * 1000);
 ```
 
----
-
-## 4. Fetch Event Metrics (Go)
+### 4. Fetch Event Metrics (Go)
 If you are building an internal admin panel in Go, you can fetch event statistics easily.
 
 ```go

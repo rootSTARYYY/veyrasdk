@@ -128,5 +128,13 @@ fs.writeFileSync("./veyra_logs.csv", csvData);
 - `veyra.incidents.create(payload)` - Manually open an incident.
 - `veyra.incidents.resolve(incidentId)` - Mark an incident as resolved.
 
+## 💡 Code Examples
+
+We provide fully working, production-ready examples for different environments. Click below to see the code:
+
+[![TypeScript Examples](https://img.shields.io/badge/TypeScript-Examples-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](./examples/ts)
+[![JavaScript Examples](https://img.shields.io/badge/JavaScript-Examples-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](./examples/js)
+[![Pure API Examples](https://img.shields.io/badge/Pure_API-(No_SDK)-20BEFF?style=for-the-badge&logo=cURL&logoColor=white)](./examples/api-only)
+
 ## License
 MIT

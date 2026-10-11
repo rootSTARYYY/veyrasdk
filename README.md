@@ -15,9 +15,7 @@ Before you can send logs, you need an account, a project, and an API key. Here i
 ### 1. Register an Account
 Create a new developer account.
 ```bash
-API_URL="[https://api.strixhost.xyz](https://api.strixhost.xyz)"
-
-curl -X POST "$API_URL/v1/auth/register" \
+curl -X POST https://api.strixhost.xyz/v1/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "email": "dev@example.com",
@@ -28,23 +26,18 @@ curl -X POST "$API_URL/v1/auth/register" \
 ### 2. Login (Get JWT Token)
 Log in to receive your Bearer Token. You will use this token for all management routes.
 ```bash
-API_URL="[https://api.strixhost.xyz](https://api.strixhost.xyz)"
-
-curl -X POST "$API_URL/v1/auth/login" \
+curl -X POST https://api.strixhost.xyz/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "dev@example.com",
     "password": "supersecure123"
   }'
-# Keep the "token" from the response!
 ```
 
 ### 3. Create a Project
 Using your JWT token, create a new monitoring project.
 ```bash
-API_URL="[https://api.strixhost.xyz](https://api.strixhost.xyz)"
-
-curl -X POST "$API_URL/v1/projects" \
+curl -X POST https://api.strixhost.xyz/v1/projects \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -d '{
@@ -52,16 +45,12 @@ curl -X POST "$API_URL/v1/projects" \
     "environment": "production",
     "heartbeatInterval": 60000
   }'
-# Keep the "id" from the response (This is your Project ID)
 ```
 
 ### 4. Generate an API Key
 Generate an API Key for your new project. **Save this key! It is only shown once.**
 ```bash
-API_URL="[https://api.strixhost.xyz](https://api.strixhost.xyz)"
-PROJECT_ID="YOUR_PROJECT_ID"
-
-curl -X POST "$API_URL/v1/projects/$PROJECT_ID/keys" \
+curl -X POST https://api.strixhost.xyz/v1/projects/YOUR_PROJECT_ID/keys \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -d '{
@@ -79,9 +68,7 @@ Once you have your API Key from Part 1 (or the dashboard), you can integrate tel
 To log a structured event from a shell script or terminal, make a `POST` request to `/v1/events`.
 
 ```bash
-API_URL="[https://api.strixhost.xyz](https://api.strixhost.xyz)"
-
-curl -X POST "$API_URL/v1/events" \
+curl -X POST https://api.strixhost.xyz/v1/events \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer veyra_your_api_key_here" \
   -d '{
@@ -98,8 +85,7 @@ If your Python backend detects a critical failure, you can trigger a Veyra incid
 ```python
 import requests
 
-base_url = "[https://api.strixhost.xyz](https://api.strixhost.xyz)"
-url = f"{base_url}/v1/incidents"
+url = "https://api.strixhost.xyz/v1/incidents"
 
 headers = {
     "Authorization": "Bearer veyra_your_api_key_here",
@@ -122,14 +108,13 @@ else:
 If you want to track uptime without installing the SDK package, just send a `POST` request to the heartbeats endpoint on an interval.
 
 ```javascript
-const HOST = "[https://api.strixhost.xyz](https://api.strixhost.xyz)";
 const API_KEY = "veyra_your_api_key_here";
 const PROJECT_ID = "your_project_id_here";
 
 // Ping Veyra every 60 seconds
 setInterval(async () => {
   try {
-    const response = await fetch(`${HOST}/v1/heartbeats/${PROJECT_ID}`, {
+    const response = await fetch(`https://api.strixhost.xyz/v1/heartbeats/${PROJECT_ID}`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${API_KEY}`
@@ -158,8 +143,7 @@ import (
 )
 
 func main() {
-	baseURL := "[https://api.strixhost.xyz](https://api.strixhost.xyz)"
-	url := baseURL + "/v1/events/metrics"
+	url := "https://api.strixhost.xyz/v1/events/metrics"
 
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Add("Authorization", "Bearer veyra_your_api_key_here")

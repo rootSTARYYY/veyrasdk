@@ -15,7 +15,7 @@ Before you can send logs, you need an account, a project, and an API key. Here i
 ### 1. Register an Account
 Create a new developer account.
 ```bash
-curl -X POST [https://api.strixhost.xyz/v1/auth/register](https://api.strixhost.xyz/v1/auth/register) \
+curl -X POST "[https://api.strixhost.xyz/v1/auth/register](https://api.strixhost.xyz/v1/auth/register)" \
   -H "Content-Type: application/json" \
   -d '{
     "email": "dev@example.com",
@@ -26,7 +26,7 @@ curl -X POST [https://api.strixhost.xyz/v1/auth/register](https://api.strixhost.
 ### 2. Login (Get JWT Token)
 Log in to receive your Bearer Token. You will use this token for all management routes.
 ```bash
-curl -X POST [https://api.strixhost.xyz/v1/auth/login](https://api.strixhost.xyz/v1/auth/login) \
+curl -X POST "[https://api.strixhost.xyz/v1/auth/login](https://api.strixhost.xyz/v1/auth/login)" \
   -H "Content-Type: application/json" \
   -d '{
     "email": "dev@example.com",
@@ -38,7 +38,7 @@ curl -X POST [https://api.strixhost.xyz/v1/auth/login](https://api.strixhost.xyz
 ### 3. Create a Project
 Using your JWT token, create a new monitoring project.
 ```bash
-curl -X POST [https://api.strixhost.xyz/v1/projects](https://api.strixhost.xyz/v1/projects) \
+curl -X POST "[https://api.strixhost.xyz/v1/projects](https://api.strixhost.xyz/v1/projects)" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -d '{
@@ -52,7 +52,7 @@ curl -X POST [https://api.strixhost.xyz/v1/projects](https://api.strixhost.xyz/v
 ### 4. Generate an API Key
 Generate an API Key for your new project. **Save this key! It is only shown once.**
 ```bash
-curl -X POST [https://api.strixhost.xyz/v1/projects/YOUR_PROJECT_ID/keys](https://api.strixhost.xyz/v1/projects/YOUR_PROJECT_ID/keys) \
+curl -X POST "[https://api.strixhost.xyz/v1/projects/YOUR_PROJECT_ID/keys](https://api.strixhost.xyz/v1/projects/YOUR_PROJECT_ID/keys)" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -d '{
@@ -70,7 +70,7 @@ Once you have your API Key from Part 1 (or the dashboard), you can integrate tel
 To log a structured event from a shell script or terminal, make a `POST` request to `/v1/events`.
 
 ```bash
-curl -X POST [https://api.strixhost.xyz/v1/events](https://api.strixhost.xyz/v1/events) \
+curl -X POST "[https://api.strixhost.xyz/v1/events](https://api.strixhost.xyz/v1/events)" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer veyra_your_api_key_here" \
   -d '{

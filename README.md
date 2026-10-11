@@ -1,157 +1,132 @@
-# Pure REST API Integration (No SDK)
+# @veyradev/sdk
 
-You don't have to use the official Node.js SDK to use Veyra! Because Veyra is a standard REST API, you can integrate it into **any** language (Python, Go, Rust, Java, etc.) or automate it using simple HTTP requests.
+The official TypeScript SDK for **Veyra** — a lightweight, self-hosted developer infrastructure platform for monitoring Node.js applications, tracking Discord bots, and managing SaaS incidents.
 
-Veyra uses two types of authentication:
-1. **JWT Tokens** for Account Management (Users, Projects, Keys)
-2. **API Keys** for Telemetry (Logs, Heartbeats, Incidents)
+[![npm version](https://badgen.net/npm/v/@veyradev/sdk)](https://www.npmjs.com/package/@veyradev/sdk) [![License: MIT](https://badgen.net/npm/license/@veyradev/sdk)](https://opensource.org/licenses/MIT)
 
----
+## 📦 Installation
 
-## 👤 Part 1: Account Management (JWT)
-
-Before you can send logs, you need an account, a project, and an API key. Here is how to automate the setup process using pure `cURL`.
-
-### 1. Register an Account
-Create a new developer account.
 ```bash
-curl -X POST https://api.strixhost.xyz/v1/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "dev@example.com",
-    "password": "supersecure123"
-  }'
+npm install @veyradev/sdk
 ```
 
-### 2. Login (Get JWT Token)
-Log in to receive your Bearer Token. You will use this token for all management routes.
-```bash
-curl -X POST https://api.strixhost.xyz/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "dev@example.com",
-    "password": "supersecure123"
-  }'
-```
+## 🚀 Quick Start (For Apps & Bots)
 
-### 3. Create a Project
-Using your JWT token, create a new monitoring project.
-```bash
-curl -X POST https://api.strixhost.xyz/v1/projects \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -d '{
-    "name": "My Go Backend",
-    "environment": "production",
-    "heartbeatInterval": 60000
-  }'
-```
+Integrating telemetry into your application takes just a few lines of code. Use the API Key generated from your Veyra dashboard to authenticate your bot or backend service.
 
-### 4. Generate an API Key
-Generate an API Key for your new project. **Save this key! It is only shown once.**
-```bash
-curl -X POST https://api.strixhost.xyz/v1/projects/YOUR_PROJECT_ID/keys \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -d '{
-    "name": "Production API Key"
-  }'
+```typescript
+import { Veyra } from "@veyradev/sdk";
+
+// Initialize with your Project's API Key
+const veyra = new Veyra({
+  token: "veyra_your_api_key_here",
+  baseUrl: "[https://api.strixhost.xyz](https://api.strixhost.xyz)" 
+});
+
+// Log a structured event
+await veyra.events.create({
+  level: "error",
+  message: "Database connection failed",
+  source: "DatabaseManager",
+  environment: "production",
+  metadata: { retries: 3 }
+});
+
+// Send an uptime heartbeat ping
+await veyra.heartbeats.send("your_project_id_here");
 ```
 
 ---
 
-## 📡 Part 2: Telemetry Integration (API Key)
+## 🛠️ Management SDK (For Dashboards & Automation)
 
-Once you have your API Key from Part 1 (or the dashboard), you can integrate telemetry into your application. **All telemetry routes use the API Key, NOT the JWT.**
+The Veyra SDK also supports full SaaS account management. You can use it to register user accounts, provision projects, and generate API keys programmatically using JWT authentication.
 
-### 1. Log an Event (cURL / Bash)
-To log a structured event from a shell script or terminal, make a `POST` request to `/v1/events`.
+### 1. Authenticate & Create a Project
+```typescript
+import { Veyra } from "@veyradev/sdk";
 
-```bash
-curl -X POST https://api.strixhost.xyz/v1/events \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer veyra_your_api_key_here" \
-  -d '{
-    "level": "error",
-    "message": "Database connection failed",
-    "source": "Payment-Service",
-    "environment": "production"
-  }'
+const veyra = new Veyra();
+
+// 1. Register or Login to your developer account
+const auth = await veyra.auth.login("dev@example.com", "supersecure123");
+
+// 2. Set the JWT token for future management requests
+veyra.setToken(auth.token);
+
+// 3. Create a new monitoring project
+const projectData = await veyra.projects.create({
+  name: "My Discord Bot",
+  environment: "production",
+  heartbeatInterval: 60000 // Expect a ping every 60 seconds
+});
+
+const projectId = projectData.project.id;
 ```
 
-### 2. Trigger an Incident (Python)
-If your Python backend detects a critical failure, you can trigger a Veyra incident directly. This will automatically fire your Discord Webhook alerts.
+### 2. Provision API Keys & Webhooks
+```typescript
+// Attach a Discord Webhook for automated downtime alerts
+await veyra.projects.update(projectId, {
+  webhookUrl: "[https://discord.com/api/webhooks/](https://discord.com/api/webhooks/)...",
+  alertsEnabled: true
+});
 
-```python
-import requests
+// Generate a secure API key for this project
+const keyData = await veyra.projects.keys.create(projectId, "Production Key");
 
-url = "https://api.strixhost.xyz/v1/incidents"
-
-headers = {
-    "Authorization": "Bearer veyra_your_api_key_here",
-    "Content-Type": "application/json"
-}
-data = {
-    "type": "database_failure",
-    "summary": "Main PostgreSQL cluster stopped responding"
-}
-
-response = requests.post(url, json=data, headers=headers)
-
-if response.status_code == 200:
-    print("Incident created:", response.json())
-else:
-    print("Failed to create incident:", response.text)
+console.log("Your raw API Token:", keyData.key.token); 
+// Note: Store this safely! The raw token is only returned once.
 ```
 
-### 3. Send a Heartbeat Ping (Vanilla JavaScript / Fetch API)
-If you want to track uptime without installing the SDK package, just send a `POST` request to the heartbeats endpoint on an interval.
+---
 
-```javascript
-const API_KEY = "veyra_your_api_key_here";
-const PROJECT_ID = "your_project_id_here";
+## 📈 Pro Features (Uptime & Log Export)
 
-// Ping Veyra every 60 seconds
-setInterval(async () => {
-  try {
-    const response = await fetch(`https://api.strixhost.xyz/v1/heartbeats/${PROJECT_ID}`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${API_KEY}`
-      }
-    });
+Veyra automatically tracks incidents and calculates SLA Uptime. You can fetch these metrics or export raw data at any time.
 
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    console.log("Heartbeat sent successfully.");
-    
-  } catch (error) {
-    console.error("Failed to ping Veyra:", error.message);
-  }
-}, 60 * 1000);
+```typescript
+// Fetch 30-Day SLA Uptime stats
+const uptime = await veyra.projects.uptime(projectId);
+console.log(`Current SLA: ${uptime.uptimeSLA}`);
+console.log(`Total Downtime: ${uptime.downtimeSeconds} seconds`);
+console.log(`Total Incidents: ${uptime.totalIncidents}`);
+
+// Export all logs as a CSV file
+const csvData = await veyra.projects.exportCsv(projectId);
+fs.writeFileSync("./veyra_logs.csv", csvData);
 ```
 
-### 4. Fetch Event Metrics (Go)
-If you are building an internal admin panel in Go, you can fetch event statistics easily.
+---
 
-```go
-package main
+## 📚 Complete API Reference
 
-import (
-	"fmt"
-	"io/ioutil"
-	"net/http"
-)
+### Account & Auth
+- `veyra.auth.register(email, password)`
+- `veyra.auth.login(email, password)`
+- `veyra.setToken(token)` - Update the active JWT or API Key.
 
-func main() {
-	url := "https://api.strixhost.xyz/v1/events/metrics"
+### Project Management *(Requires JWT)*
+- `veyra.projects.list()` - List all projects owned by the user.
+- `veyra.projects.create(data)` - Create a new project.
+- `veyra.projects.get(projectId)` - Fetch project details.
+- `veyra.projects.update(projectId, data)` - Update settings (webhooks, intervals).
+- `veyra.projects.delete(projectId)` - Permanently delete a project.
+- `veyra.projects.uptime(projectId)` - Get 30-day uptime SLA calculations.
+- `veyra.projects.exportCsv(projectId)` - Download all project events as a CSV string.
 
-	req, _ := http.NewRequest("GET", url, nil)
-	req.Header.Add("Authorization", "Bearer veyra_your_api_key_here")
+### API Keys *(Requires JWT)*
+- `veyra.projects.keys.list(projectId)` - List all keys (returns secure hashes/prefixes).
+- `veyra.projects.keys.create(projectId, name)` - Generate a new key.
+- `veyra.projects.keys.revoke(projectId, keyId)` - Delete a key.
 
-	res, _ := http.DefaultClient.Do(req)
-	defer res.Body.Close()
+### Telemetry *(Requires API Key)*
+- `veyra.events.create(payload)` - Ingest a new log event.
+- `veyra.events.list(queryFilters)` - Query recent events.
+- `veyra.events.metrics()` - Get event counts grouped by severity level.
+- `veyra.heartbeats.send(projectId)` - Ping the heartbeat monitor.
+- `veyra.incidents.create(payload)` - Manually open an incident.
+- `veyra.incidents.resolve(incidentId)` - Mark an incident as resolved.
 
-	body, _ := ioutil.ReadAll(res.Body)
-	fmt.Println(string(body))
-}
-```
+## License
+MIT
